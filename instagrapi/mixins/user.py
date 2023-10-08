@@ -552,7 +552,7 @@ class UserMixin:
                 f"friendships/{user_id}/following/",
                 params={
                     "max_id": max_id,
-                    "count": max_amount or MAX_USER_COUNT,
+                    "count": min(max_amount, MAX_USER_COUNT),
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
@@ -655,7 +655,7 @@ class UserMixin:
             "id": user_id,
             "include_reel": True,
             "fetch_mutual": False,
-            "first": 12,
+            "first": MAX_USER_COUNT,
         }
         self.inject_sessionid_to_public()
         while True:
@@ -727,7 +727,7 @@ class UserMixin:
                 f"friendships/{user_id}/followers/",
                 params={
                     "max_id": max_id,
-                    "count": max_amount or MAX_USER_COUNT,
+                    "count": min(max_amount, MAX_USER_COUNT),
                     "rank_token": self.rank_token,
                     "search_surface": "follow_list_page",
                     "query": "",
@@ -761,10 +761,10 @@ class UserMixin:
         List[UserShort]
             List of objects of User type
         """
-        users, _ = self.user_followers_v1_chunk(str(user_id), amount)
+        users, max_id = self.user_followers_v1_chunk(str(user_id), amount)
         if amount:
             users = users[:amount]
-        return users
+        return users, max_id
 
     def user_followers(
         self, user_id: str, use_cache: bool = True, amount: int = 0
